@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Control de rejillas</title>
+  </head>
+  <body>
+    <h1>Control de rejillas</h1>
+    <div>
+      <h2>Salon</h2>
+      <button onclick="openVent(0)">Open</button>
+      <button onclick="closeVent(0)">Close</button>
+    </div>
+    <div>
+      <h2>Dormitorio</h2>
+      <button onclick="openVent(1)">Open</button>
+      <button onclick="closeVent(1)">Close</button>
+    </div>
+    <div>
+      <h2>Hab. zigzag</h2>
+      <button onclick="openVent(2)">Open</button>
+      <button onclick="closeVent(2)">Close</button>
+    </div>
+    <div>
+      <h2>Hab. ofi</h2>
+      <button onclick="openVent(3)">Open</button>
+      <button onclick="closeVent(3)">Close</button>
+    </div>
+    <script>
+      function openVent(ventId) {
+        fetch('/air_vent/open/' + ventId);
+      }
+
+      function closeVent(ventId) {
+        fetch('/air_vent/close/' + ventId);
+      }
+    </script>
+  </body>
+</html>
