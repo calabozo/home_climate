@@ -1,4 +1,4 @@
-from wibee import WiBeee
+from wibeee_xml import WiBeee
 
 
     
@@ -17,6 +17,6 @@ if __name__ == "__main__":
     wibeee = WiBeee(config_path)
     while True:
         try:
-            wibeee.start_server()
+            wibeee.run()
         except Exception as e:
             print(f"An error occurred while starting the server: {e}")
