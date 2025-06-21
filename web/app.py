@@ -1,7 +1,10 @@
 from air_vent import open_vent, close_vent, get_vent_status
 from flask import Flask, jsonify, render_template
 import os
-from back.wibeee_xml import WiBeee
+import configparser
+import random
+import requests
+import xml.etree.ElementTree as ET
 
 app = Flask(__name__)
 
@@ -33,17 +36,29 @@ def air_vent_status(vent_id):
     return jsonify(status=status, vent=vent_id)
 
 
+def _load_ip_address():
+    config_path = os.getenv("HC_CONFIG", "config.ini")
+    parser = configparser.ConfigParser()
+    parser.read(config_path)
+    return parser.get("WiBeee", "ip_address")
+
+
+def _fetch_power(ip_address):
+    url = f"http://{ip_address}/en/status.xml?rnd={random.random()}"
+    response = requests.get(url)
+    response.raise_for_status()
+
+    root = ET.fromstring(response.content)
+    return float(root.find("fase4_p_activa").text)
+
+
 @app.route('/power')
 def current_power():
     """Return the current power consumption directly from the WiBeee sensor."""
-    config_path = os.getenv("HC_CONFIG", "config.ini")
-    wibeee = WiBeee(config_path)
 
     try:
-        data = wibeee.fetch()
-        # The WiBeee reports active power for four probes.  The last one
-        # represents the total active power.
-        value = data["p_activa"][3]
+        ip_address = _load_ip_address()
+        value = _fetch_power(ip_address)
     except Exception:
         value = None
 
