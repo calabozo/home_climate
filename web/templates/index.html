@@ -7,31 +7,94 @@
     <h1>Control de rejillas</h1>
     <div>
       <h2>Salon</h2>
-      <button onclick="openVent(0)">Open</button>
-      <button onclick="closeVent(0)">Close</button>
+      <label class="switch">
+        <input type="checkbox" id="vent0" onchange="toggleVent(0)">
+        <span class="slider round"></span>
+      </label>
     </div>
     <div>
       <h2>Dormitorio</h2>
-      <button onclick="openVent(1)">Open</button>
-      <button onclick="closeVent(1)">Close</button>
+      <label class="switch">
+        <input type="checkbox" id="vent1" onchange="toggleVent(1)">
+        <span class="slider round"></span>
+      </label>
     </div>
     <div>
       <h2>Hab. zigzag</h2>
-      <button onclick="openVent(2)">Open</button>
-      <button onclick="closeVent(2)">Close</button>
+      <label class="switch">
+        <input type="checkbox" id="vent2" onchange="toggleVent(2)">
+        <span class="slider round"></span>
+      </label>
     </div>
     <div>
       <h2>Hab. ofi</h2>
-      <button onclick="openVent(3)">Open</button>
-      <button onclick="closeVent(3)">Close</button>
+      <label class="switch">
+        <input type="checkbox" id="vent3" onchange="toggleVent(3)">
+        <span class="slider round"></span>
+      </label>
     </div>
+    <style>
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      .switch input {
+        display: none;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+      }
+      input:checked + .slider {
+        background-color: #2196F3;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+      .slider.round {
+        border-radius: 34px;
+      }
+      .slider.round:before {
+        border-radius: 50%;
+      }
+    </style>
     <script>
-      function openVent(ventId) {
-        fetch('/air_vent/open/' + ventId);
+      function updateStatus(ventId) {
+        fetch('/air_vent/status/' + ventId)
+          .then(r => r.json())
+          .then(d => {
+            document.getElementById('vent' + ventId).checked = d.status === 'open';
+          });
       }
 
-      function closeVent(ventId) {
-        fetch('/air_vent/close/' + ventId);
+      function pollStatus() {
+        [0, 1, 2, 3].forEach(updateStatus);
+      }
+      setInterval(pollStatus, 5000);
+      // Initial load
+      pollStatus();
+
+      function toggleVent(ventId) {
+        const checked = document.getElementById('vent' + ventId).checked;
+        fetch('/air_vent/' + (checked ? 'open' : 'close') + '/' + ventId);
       }
     </script>
   </body>

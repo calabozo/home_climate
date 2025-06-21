@@ -1,8 +1,8 @@
-from air_vent import open_vent, close_vent
-from flask import Flask
-from flask import render_template
+from air_vent import open_vent, close_vent, get_vent_status
+from flask import Flask, jsonify, render_template
 
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
@@ -10,21 +10,24 @@ def index():
 
 @app.route('/air_vent/open/<int:vent_id>')
 def open_air_vent(vent_id):
-    # Call the open_vent() function with the provided vent_id
+    """Open the selected vent and record its status."""
     open_vent(vent_id)
-    # Return a message to indicate success
-    return f"Opened air vent {vent_id}"
+    return jsonify(status="open", vent=vent_id)
 
 
 @app.route('/air_vent/close/<int:vent_id>')
 def close_air_vent(vent_id):
-    # Call the open_vent() function with the provided vent_id
+    """Close the selected vent and record its status."""
     close_vent(vent_id)
-    # Return a message to indicate success
-    return f"Closed air vent {vent_id}"
+    return jsonify(status="closed", vent=vent_id)
+
+
+@app.route('/air_vent/status/<int:vent_id>')
+def air_vent_status(vent_id):
+    """Return the current status for the requested vent."""
+    status = "open" if get_vent_status(vent_id) else "closed"
+    return jsonify(status=status, vent=vent_id)
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-    
-    
