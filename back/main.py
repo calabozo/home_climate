@@ -1,4 +1,4 @@
-from wibeee import WiBeeeInfluxDB
+from wibeee_influxdb import WiBeeeInfluxDB
 
 
     
