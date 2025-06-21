@@ -48,3 +48,22 @@ service influxd status
 ```
 influx config create --config-name home_climate --host-url http://localhost:8086 --org home_climate --token <YOUR_TOKEN_ID> --active
 ```
+
+## Run as a systemd service
+
+A sample `home_climate.service` file is included to run the backend and web server automatically.
+Update the `WorkingDirectory` and `ExecStart` paths so they point to the location of this project.
+
+1. Copy the service file to your systemd directory:
+
+```bash
+sudo cp home_climate.service /etc/systemd/system/
+```
+
+2. Reload systemd and enable the service so it starts on boot:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable home_climate.service
+sudo systemctl start home_climate.service
+```
