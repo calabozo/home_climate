@@ -6,6 +6,10 @@
   <body>
     <h1>Control de rejillas</h1>
     <div>
+      <label>Consumo actual:</label>
+      <input type="text" id="powerBox" readonly>
+    </div>
+    <div>
       <h2>Salon</h2>
       <label class="switch">
         <input type="checkbox" id="vent0" onchange="toggleVent(0)">
@@ -91,6 +95,17 @@
       setInterval(pollStatus, 5000);
       // Initial load
       pollStatus();
+
+      function updatePower() {
+        fetch('/power')
+          .then(r => r.json())
+          .then(d => {
+            const val = d.value === null ? 'N/A' : d.value;
+            document.getElementById('powerBox').value = val;
+          });
+      }
+      setInterval(updatePower, 5000);
+      updatePower();
 
       function toggleVent(ventId) {
         const checked = document.getElementById('vent' + ventId).checked;
