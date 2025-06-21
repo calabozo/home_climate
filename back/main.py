@@ -1,4 +1,4 @@
-from wibeee_xml import WiBeee
+from wibeee_influxdb import WiBeeeInfluxDB
 
 
     
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     args = parse_arguments()
     config_path = args.config
 
-    wibeee = WiBeee(config_path)
+    wibeee = WiBeeeInfluxDB(config_path)
     while True:
         try:
             wibeee.run()

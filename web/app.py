@@ -1,7 +1,14 @@
 from air_vent import open_vent, close_vent, get_vent_status
 from flask import Flask, jsonify, render_template
+import os
+from wibeee import WiBeee
 
 app = Flask(__name__)
+
+# Load WiBeee configuration once
+wibeee = WiBeee(os.getenv("HC_CONFIG", "config.ini"))
+
+
 
 
 @app.route('/')
@@ -29,5 +36,22 @@ def air_vent_status(vent_id):
     return jsonify(status=status, vent=vent_id)
 
 
+
+
+
+@app.route('/power')
+def current_power():
+    """Return the current power consumption directly from the WiBeee sensor."""
+
+    try:
+        data = wibeee.fetch()
+        value = data["p_activa"][3]
+    except Exception:
+        value = None
+
+    return jsonify(value=value)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
+
