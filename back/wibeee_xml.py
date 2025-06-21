@@ -9,6 +9,7 @@ import os
 import sys
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
+import pytz
 
 class WiBeee:
     def __init__(self, config_path):
@@ -51,7 +52,7 @@ class WiBeee:
     
     def save_influxdb(self, time_param, active_power, apparent_power, energy):
         # Convert timestamp to datetime object
-        timestamp = datetime.fromtimestamp(int(time_param))
+        timestamp = datetime.fromtimestamp(int(time_param), tz=pytz.timezone('Europe/Paris'))
 
         # Create data points
         points = []
@@ -79,13 +80,7 @@ class WiBeee:
         while True:
             try:
                 wibeee_data = self.fetch()
-                print("Wibeee Data:")
-                print(f"Time: {wibeee_data['time']}")
-                for fase in range(4):
-                    print(f"Phase {fase + 1}:")
-                    print(f"  Active Power: {wibeee_data['p_activa'][fase]:.2f}")
-                    print(f"  Apparent Power: {wibeee_data['p_aparent'][fase]:.2f}")
-                    print(f"  Active Energy: {wibeee_data['energia_activa'][fase]:.2f}")
+                print(f"Time: {wibeee_data['time']} Power: {wibeee_data['p_activa'][3]:.2f} ")
                 
                 # Save the wibeee_data in InfluxDB
                 self.save_influxdb(
@@ -97,4 +92,4 @@ class WiBeee:
             except Exception as e:
                 print(f"An error occurred: {e}")
             
-            time.sleep(15)
+            time.sleep(30)
