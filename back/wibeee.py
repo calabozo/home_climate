@@ -10,7 +10,7 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 
-class WiBee:
+class WiBeee:
     """Base class used to communicate with a WiBeee sensor."""
 
     def __init__(self, config_path: str):
@@ -43,8 +43,8 @@ class WiBee:
         return data
 
 
-class WiBeeInfluxDB(WiBee):
-    """Extension of WiBee that stores the fetched values in InfluxDB."""
+class WiBeeeInfluxDB(WiBeee):
+    """Extension of WiBeee that stores the fetched values in InfluxDB."""
 
     def __init__(self, config_path: str):
         super().__init__(config_path)

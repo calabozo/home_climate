@@ -1,12 +1,12 @@
 from air_vent import open_vent, close_vent, get_vent_status
 from flask import Flask, jsonify, render_template
 import os
-from wibeee import WiBee
+from wibeee import WiBeee
 
 app = Flask(__name__)
 
-# Load WiBee configuration once
-wibee = WiBee(os.getenv("HC_CONFIG", "config.ini"))
+# Load WiBeee configuration once
+wibeee = WiBeee(os.getenv("HC_CONFIG", "config.ini"))
 
 
 
@@ -44,7 +44,7 @@ def current_power():
     """Return the current power consumption directly from the WiBeee sensor."""
 
     try:
-        data = wibee.fetch()
+        data = wibeee.fetch()
         value = data["p_activa"][3]
     except Exception:
         value = None
