@@ -5,6 +5,11 @@ import os
 
 
 class Temperature:
+
+# 28-3c55e3816027: Conducto aire
+# 28-3cb8e3812450: Techo baño
+# 28-3cf2e381dc4f: Techo distribuidor
+
     def __init__(self, gpio_pin=4):
         """
         Initialize temperature sensor reader for DS18B20 on 1-wire protocol.

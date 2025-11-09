@@ -20,6 +20,15 @@ class TemperatureInfluxDB(Temperature):
             org=self.config.get("influxdb", "org"),
         )
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
+        self.sensor_names = self._load_sensor_names()
+    
+    def _load_sensor_names(self) -> dict:
+        """Load sensor name mappings from config if available."""
+        sensor_names = {}
+        if self.config.has_section("temperature_sensors"):
+            for sensor_id, sensor_name in self.config.items("temperature_sensors"):
+                sensor_names[sensor_id] = sensor_name
+        return sensor_names
 
     def load_config(self, config_path: str) -> configparser.ConfigParser:
         parser = configparser.ConfigParser()
@@ -37,7 +46,12 @@ class TemperatureInfluxDB(Temperature):
 
         points = []
         for sensor_id, temp in temperatures.items():
-            point = Point("temperature").tag("sensor", sensor_id)
+            point = Point("temperature")
+            # Tag with sensor ID (unique identifier)
+            point.tag("sensor_id", sensor_id)
+            # Tag with sensor name/location if configured, otherwise use sensor_id
+            sensor_name = self.sensor_names.get(sensor_id, sensor_id)
+            point.tag("sensor", sensor_name)
             point.field("celsius", float(temp))
             point.time(timestamp)
             points.append(point)
