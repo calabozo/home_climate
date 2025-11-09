@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Control de rejillas</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   </head>
   <body>
     <h1>Control de rejillas</h1>
@@ -36,6 +37,14 @@
         <input type="checkbox" id="vent3" onchange="toggleVent(3)">
         <span class="slider round"></span>
       </label>
+    </div>
+    <div style="margin-top: 20px;">
+      <h2>Consumo última hora</h2>
+      <canvas id="powerChart" style="max-width: 800px; max-height: 400px;"></canvas>
+    </div>
+    <div style="margin-top: 20px;">
+      <h2>Temperatura últimas 6 horas</h2>
+      <canvas id="temperatureChart" style="max-width: 800px; max-height: 400px;"></canvas>
     </div>
     <style>
       .switch {
@@ -111,6 +120,183 @@
         const checked = document.getElementById('vent' + ventId).checked;
         fetch('/air_vent/' + (checked ? 'open' : 'close') + '/' + ventId);
       }
+
+      // Power consumption chart
+      let powerChart = null;
+
+      function updatePowerChart() {
+        fetch('/power/history')
+          .then(r => r.json())
+          .then(d => {
+            if (d.error) {
+              console.error('Error fetching power history:', d.error);
+              return;
+            }
+
+            const ctx = document.getElementById('powerChart').getContext('2d');
+            
+            // Format times for display
+            const labels = d.times.map(t => {
+              const date = new Date(t);
+              return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            });
+
+            // Destroy existing chart if it exists
+            if (powerChart) {
+              powerChart.destroy();
+            }
+
+            powerChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: 'Consumo (W)',
+                  data: d.values,
+                  borderColor: 'rgb(33, 150, 243)',
+                  backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                  tension: 0.4,
+                  fill: true
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    title: {
+                      display: true,
+                      text: 'Potencia (W)'
+                    }
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Hora'
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    display: true
+                  }
+                }
+              }
+            });
+          })
+          .catch(err => {
+            console.error('Error loading power chart:', err);
+          });
+      }
+
+      // Update chart on load and every 30 seconds
+      updatePowerChart();
+      setInterval(updatePowerChart, 30000);
+
+      // Temperature chart
+      let temperatureChart = null;
+
+      // Color palette for multiple sensors
+      const temperatureColors = [
+        { border: 'rgb(255, 99, 132)', background: 'rgba(255, 99, 132, 0.1)' },
+        { border: 'rgb(54, 162, 235)', background: 'rgba(54, 162, 235, 0.1)' },
+        { border: 'rgb(255, 206, 86)', background: 'rgba(255, 206, 86, 0.1)' },
+        { border: 'rgb(75, 192, 192)', background: 'rgba(75, 192, 192, 0.1)' },
+        { border: 'rgb(153, 102, 255)', background: 'rgba(153, 102, 255, 0.1)' },
+        { border: 'rgb(255, 159, 64)', background: 'rgba(255, 159, 64, 0.1)' },
+      ];
+
+      function updateTemperatureChart() {
+        fetch('/temperature/history')
+          .then(r => r.json())
+          .then(d => {
+            if (d.error) {
+              console.error('Error fetching temperature history:', d.error);
+              return;
+            }
+
+            const ctx = document.getElementById('temperatureChart').getContext('2d');
+            
+            // Get all unique timestamps across all sensors
+            const allTimes = new Set();
+            Object.keys(d).forEach(sensor => {
+              d[sensor].times.forEach(t => allTimes.add(t));
+            });
+            const sortedTimes = Array.from(allTimes).sort();
+            
+            // Format times for display
+            const labels = sortedTimes.map(t => {
+              const date = new Date(t);
+              return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            });
+
+            // Create datasets for each sensor
+            const datasets = Object.keys(d).map((sensor, index) => {
+              // Create a map of time -> value for this sensor
+              const timeValueMap = {};
+              d[sensor].times.forEach((time, i) => {
+                timeValueMap[time] = d[sensor].values[i];
+              });
+              
+              // Create data array aligned with sortedTimes
+              const data = sortedTimes.map(time => timeValueMap[time] || null);
+              
+              const colorIndex = index % temperatureColors.length;
+              return {
+                label: sensor,
+                data: data,
+                borderColor: temperatureColors[colorIndex].border,
+                backgroundColor: temperatureColors[colorIndex].background,
+                tension: 0.4,
+                fill: false
+              };
+            });
+
+            // Destroy existing chart if it exists
+            if (temperatureChart) {
+              temperatureChart.destroy();
+            }
+
+            temperatureChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: labels,
+                datasets: datasets
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                  y: {
+                    title: {
+                      display: true,
+                      text: 'Temperatura (°C)'
+                    }
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Hora'
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    display: true
+                  }
+                }
+              }
+            });
+          })
+          .catch(err => {
+            console.error('Error loading temperature chart:', err);
+          });
+      }
+
+      // Update chart on load and every 30 seconds
+      updateTemperatureChart();
+      setInterval(updateTemperatureChart, 30000);
     </script>
   </body>
 </html>
