@@ -1,4 +1,6 @@
 #!/bin/bash
-export PYTHONPATH=./back/:$PYTHONPATH~
+set -euo pipefail
 source ./venv/bin/activate
-python3 ./back/main.py --config config.ini
+export PYTHONPATH=./back/:${PYTHONPATH:-}
+exec python3 ./back/main.py --config config.ini
+

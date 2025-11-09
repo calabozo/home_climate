@@ -1,0 +1,27 @@
+[Unit]
+Description=Home Climate (backend + web)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jose
+WorkingDirectory=/home/jose/coding/home_climate
+
+# Ensure venv binaries are preferred
+Environment="PATH=/home/jose/coding/home_climate/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+# Start both via wrapper; web stays in foreground
+ExecStart=/home/jose/coding/home_climate/serve.sh
+
+Restart=always
+RestartSec=5
+
+# Optional: cleaner stop (sends SIGTERM to the exec'd gunicorn)
+KillMode=control-group
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
+
