@@ -1,6 +1,6 @@
 from wibeee_influxdb import WiBeeeInfluxDB
-
-
+from temperature_influxdb import TemperatureInfluxDB
+import time
     
 
 def parse_arguments():
@@ -15,8 +15,16 @@ if __name__ == "__main__":
     config_path = args.config
 
     wibeee = WiBeeeInfluxDB(config_path)
+    temperature = TemperatureInfluxDB(config_path)
     while True:
         try:
-            wibeee.run()
+            wibeee.save_power()            
         except Exception as e:
-            print(f"An error occurred while starting the server: {e}")
+            print(f"An error occurred while saving power: {e}")
+        
+        try:
+            temperature.save_temperature()
+        except Exception as e:
+            print(f"An error occurred while saving temperature: {e}")
+
+        time.sleep(30)

@@ -45,18 +45,16 @@ class WiBeeeInfluxDB(WiBeee):
             record=points,
         )
 
-    def run(self) -> None:
-        while True:
-            try:
-                data = self.fetch()
-                print(f"Time: {data['time']} Power: {data['p_activa'][3]:.2f}")
-                self.save_influxdb(
-                    data["time"],
-                    data["p_activa"],
-                    data["p_aparent"],
-                    data["energia_activa"],
-                )
-            except Exception as e:
-                print(f"An error occurred: {e}")
+    def save_power(self) -> None:        
+        try:
+            data = self.fetch()
+            #print(f"Time: {data['time']} Power: {data['p_activa'][3]:.2f}")
+            self.save_influxdb(
+                data["time"],
+                data["p_activa"],
+                data["p_aparent"],
+                data["energia_activa"],
+            )
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
-            time.sleep(30)
